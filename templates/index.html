@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microblog</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Microblog</h1>
+
+    <!-- New post form -->
+    <form method="POST">
+        <input type="text" name="user" placeholder="Your name" required>
+        <textarea name="content" placeholder="What's on your mind?" required></textarea>
+        <button type="submit">Post</button>
+    </form>
+
+    <div class="posts">
+        {% for p in posts %}
+            <div class="post">
+                <!-- Main post -->
+                <div class="post-header">
+                    <strong>{{ p.user }}</strong>
+                    <span class="time">{{ p.time }}</span>
+                </div>
+                <div>{{ p.content }}</div>
+
+                <!-- Reply button for main post -->
+                <button type="button"
+                        class="small-btn"
+                        onclick="setReplyTarget({{ p.id }}, '{{ p.user }}')">
+                    Reply to {{ p.user }}
+                </button>
+
+                <!-- Replies -->
+                <div class="replies">
+                    {% for r in p.replies %}
+                        <div class="reply">
+                            <div class="post-header">
+                                <strong>{{ r.user }}</strong>
+                                {% if r.reply_to %}
+                                    <span class="reply-to">↪ @{{ r.reply_to }}</span>
+                                {% endif %}
+                                <span class="time">{{ r.time }}</span>
+                            </div>
+                            <div>{{ r.content }}</div>
+
+                            <!-- Reply button for this specific reply -->
+                            <button type="button"
+                                    class="small-btn"
+                                    onclick="setReplyTarget({{ p.id }}, '{{ r.user }}')">
+                                Reply to {{ r.user }}
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Reply form for this post -->
+                <form method="POST" action="/reply/{{ p.id }}" class="reply-form">
+                    <span id="replying_to_{{ p.id }}" class="replying-to"></span>
+                    <input type="hidden" name="reply_to" id="reply_to_{{ p.id }}">
+
+                    <input type="text" name="reply_user" placeholder="Your name" required>
+                    <textarea name="reply_content" placeholder="Reply..." required></textarea>
+                    <button type="submit">Reply</button>
+                </form>
+
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function setReplyTarget(postId, user) {
+            const input = document.getElementById('reply_to_' + postId);
+            const label = document.getElementById('replying_to_' + postId);
+
+            if (input && label) {
+                input.value = user;
+                label.textContent = 'Replying to: ' + user;
+            }
+        }
+    </script>
+</body>
+</html>
